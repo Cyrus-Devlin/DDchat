@@ -13,30 +13,31 @@ interface FeedbackRequest {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json() as FeedbackRequest;
-  const { conversationId, feedbackText } = body;
+  try {
+    const body = await req.json() as FeedbackRequest;
+    const { conversationId, feedbackText } = body;
 
-  const [activePrompt, messages] = await Promise.all([
-    convex.query(api.promptVersions.getActive, { persona: "customer" }),
-    convex.query(api.messages.list, {
-      conversationId: conversationId as Id<"conversations">,
-    }),
-  ]);
+    const [activePrompt, messages] = await Promise.all([
+      convex.query(api.promptVersions.getActive, { persona: "customer" }),
+      convex.query(api.messages.list, {
+        conversationId: conversationId as Id<"conversations">,
+      }),
+    ]);
 
-  const currentPrompt = (activePrompt as { content?: string } | null)?.content
-    ?? "You are Dripdash's booking assistant.";
+    const currentPrompt = (activePrompt as { content?: string } | null)?.content
+      ?? "You are Dripdash's booking assistant.";
 
-  const conversation = (messages as Array<{ sender: string; text: string }>)
-    .filter((m) => m.sender === "customer" || m.sender === "ai")
-    .map((m) => `${m.sender === "customer" ? "Customer" : "AI"}: ${m.text}`)
-    .join("\n\n");
+    const conversation = (messages as Array<{ sender: string; text: string }>)
+      .filter((m) => m.sender === "customer" || m.sender === "ai")
+      .map((m) => `${m.sender === "customer" ? "Customer" : "AI"}: ${m.text}`)
+      .join("\n\n");
 
-  const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-5",
-    max_tokens: 2048,
-    messages: [{
-      role: "user",
-      content: `You are improving an AI customer service system prompt based on founder feedback.
+    const response = await anthropic.messages.create({
+      model: "claude-sonnet-4-5",
+      max_tokens: 2048,
+      messages: [{
+        role: "user",
+        content: `You are improving an AI customer service system prompt based on founder feedback.
 
 Current system prompt:
 <prompt>
@@ -54,24 +55,29 @@ ${feedbackText}
 </feedback>
 
 Rewrite the system prompt to address the feedback. Preserve everything that is working well. Make minimal targeted changes. Return only the new prompt text, nothing else — no explanation, no preamble.`,
-    }],
-  });
+      }],
+    });
 
-  const textBlock = response.content.find((b) => b.type === "text");
-  const newPrompt = textBlock && "text" in textBlock ? (textBlock.text as string) : null;
+    const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === "text");
+    const newPrompt = textBlock?.text ?? null;
 
-  if (!newPrompt) {
-    return NextResponse.json({ error: "Failed to generate prompt" }, { status: 500 });
+    if (!newPrompt) {
+      return NextResponse.json({ error: "Failed to generate prompt" }, { status: 500 });
+    }
+
+    const versionId = await convex.mutation(api.promptVersions.propose, {
+      persona: "customer",
+      content: newPrompt,
+      changeReason: `Founder feedback: ${feedbackText.slice(0, 120)}`,
+      proposedBy: "coach_claude",
+    });
+
+    await convex.mutation(api.promptVersions.activate, { versionId });
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("[feedback-prompt] error:", err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  const versionId = await convex.mutation(api.promptVersions.propose, {
-    persona: "customer",
-    content: newPrompt,
-    changeReason: `Founder feedback: ${feedbackText.slice(0, 120)}`,
-    proposedBy: "coach_claude",
-  });
-
-  await convex.mutation(api.promptVersions.activate, { versionId });
-
-  return NextResponse.json({ ok: true });
 }
