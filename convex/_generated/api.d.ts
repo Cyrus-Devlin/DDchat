@@ -10,6 +10,7 @@
 
 import type * as claudeTools from "../claudeTools.js";
 import type * as coachConversations from "../coachConversations.js";
+import type * as coachFiles from "../coachFiles.js";
 import type * as coachMessages from "../coachMessages.js";
 import type * as coachTools from "../coachTools.js";
 import type * as conversations from "../conversations.js";
@@ -31,6 +32,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   claudeTools: typeof claudeTools;
   coachConversations: typeof coachConversations;
+  coachFiles: typeof coachFiles;
   coachMessages: typeof coachMessages;
   coachTools: typeof coachTools;
   conversations: typeof conversations;

@@ -14,18 +14,24 @@ const SYSTEM_PROMPT_FALLBACK =
 
 interface ChatRequest {
   conversationId: string;
-  customerId: string;
   text: string;
+  // customerId is now derived server-side from the conversation
 }
 
 export async function POST(req: NextRequest) {
   const body = await req.json() as ChatRequest;
-  const { conversationId, customerId, text } = body;
+  const { conversationId, text } = body;
+
+  // Derive customerId from the conversation
+  const conversation = await convex.query(api.conversations.get, {
+    conversationId: conversationId as Id<"conversations">,
+  });
+  const customerId = conversation?.customerId ?? ("prototype" as unknown as Id<"customers">);
 
   // Save customer message (skip hardcoded AI reply)
   await convex.mutation(api.messages.send, {
     conversationId: conversationId as Id<"conversations">,
-    customerId: customerId as Id<"customers">,
+    customerId,
     text,
     skipAiReply: true,
   });

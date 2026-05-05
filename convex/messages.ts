@@ -53,6 +53,19 @@ export const send = mutation({
   },
 });
 
+export const clearConversation = mutation({
+  args: { conversationId: v.id("conversations") },
+  handler: async (ctx, { conversationId }) => {
+    const messages = await ctx.db
+      .query("messages")
+      .withIndex("by_conversation", (q) => q.eq("conversationId", conversationId))
+      .collect();
+    for (const msg of messages) {
+      await ctx.db.delete(msg._id);
+    }
+  },
+});
+
 export const saveAiReply = mutation({
   args: {
     conversationId: v.id("conversations"),

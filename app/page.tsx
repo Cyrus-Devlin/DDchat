@@ -11,19 +11,12 @@ export default function Home() {
   const [unlocked, setUnlocked] = useState(false);
   const [checking, setChecking] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("customer");
-  const [flaggedMessageId, setFlaggedMessageId] = useState<string | null>(null);
-
   useEffect(() => {
     if (localStorage.getItem("dripdash_unlocked") === "true") {
       setUnlocked(true);
     }
     setChecking(false);
   }, []);
-
-  const handleFlagForCoach = (messageId: string) => {
-    setFlaggedMessageId(messageId);
-    setActiveTab("coach");
-  };
 
   if (checking) return null;
   if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />;
@@ -54,12 +47,12 @@ export default function Home() {
       </nav>
       <div className="flex-1 overflow-hidden">
         <div className={`h-full overflow-hidden ${activeTab === "customer" ? "" : "hidden"}`}>
-          <ChatPage onFlagForCoach={handleFlagForCoach} />
+          <ChatPage onSwitchToCoach={() => setActiveTab("coach")} />
         </div>
         <div className={`h-full overflow-hidden ${activeTab === "coach" ? "" : "hidden"}`}>
           <CoachPage
-            flaggedMessageId={flaggedMessageId}
-            onFlaggedMessageConsumed={() => setFlaggedMessageId(null)}
+            flaggedMessageId={null}
+            onFlaggedMessageConsumed={() => {}}
           />
         </div>
       </div>

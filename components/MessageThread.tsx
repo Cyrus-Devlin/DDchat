@@ -12,10 +12,10 @@ interface StreamingMessage {
 interface Props {
   messages: Doc<"messages">[];
   streamingMessage: StreamingMessage | null;
-  onFlag?: (messageId: string) => void;
+  onFeedback?: (messageId: string, messageText: string, feedbackText: string) => Promise<void>;
 }
 
-export default function MessageThread({ messages, streamingMessage, onFlag }: Props) {
+export default function MessageThread({ messages, streamingMessage, onFeedback }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,12 +28,12 @@ export default function MessageThread({ messages, streamingMessage, onFlag }: Pr
       {messages.length === 0 && (
         <div className="flex items-center justify-center h-full">
           <p className="text-gray-500 text-sm">
-            Select a customer to start chatting
+            Send a message to start chatting
           </p>
         </div>
       )}
       {messages.map((msg) => (
-        <MessageBubble key={msg._id} message={msg} onFlag={onFlag} />
+        <MessageBubble key={msg._id} message={msg} onFeedback={onFeedback} />
       ))}
       {streamingMessage && (
         <div className="flex flex-col items-start mb-1">

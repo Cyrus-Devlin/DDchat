@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -14,40 +14,42 @@ interface StreamingMessage {
 }
 
 interface Props {
-  onFlagForCoach: (messageId: string) => void;
+  onSwitchToCoach: () => void;
 }
 
-export default function ChatPage({ onFlagForCoach }: Props) {
-  const [selectedCustomerId, setSelectedCustomerId] = useState<Id<"customers"> | null>(null);
+export default function ChatPage({ onSwitchToCoach }: Props) {
   const [conversationId, setConversationId] = useState<Id<"conversations"> | null>(null);
   const [streaming, setStreaming] = useState<StreamingMessage | null>(null);
-  const customers = useQuery(api.customers.list);
+
+  const getDefault = useMutation(api.conversations.getDefault);
+  const clearConversation = useMutation(api.messages.clearConversation);
+  const getOrCreateCoach = useMutation(api.coachConversations.getOrCreate);
+  const saveFounderMessage = useMutation(api.coachMessages.saveFounderMessage);
+  const recordFeedback = useMutation(api.feedback.record);
+
+  useEffect(() => {
+    getDefault({}).then((id) => setConversationId(id));
+  }, []);
+
   const messages = useQuery(
     api.messages.list,
     conversationId ? { conversationId } : "skip"
   );
 
-  const getOrCreate = useMutation(api.conversations.getOrCreate);
-
-  const handleSelectCustomer = async (customerId: Id<"customers">) => {
-    setSelectedCustomerId(customerId);
-    const convId = await getOrCreate({ customerId });
-    setConversationId(convId);
+  const handleClear = async () => {
+    if (!conversationId) return;
+    await clearConversation({ conversationId });
   };
 
   const handleSend = async (text: string) => {
-    if (!conversationId || !selectedCustomerId) return;
+    if (!conversationId) return;
 
     setStreaming({ text: "", toolsCalled: [] });
 
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        conversationId,
-        customerId: selectedCustomerId,
-        text,
-      }),
+      body: JSON.stringify({ conversationId, text }),
     });
 
     if (!res.body) {
@@ -93,19 +95,37 @@ export default function ChatPage({ onFlagForCoach }: Props) {
     setStreaming(null);
   };
 
+  const handleFeedback = async (messageId: string, messageText: string, feedbackText: string) => {
+    await recordFeedback({
+      messageId: messageId as Id<"messages">,
+      conversationId: conversationId ?? undefined,
+      text: feedbackText,
+      sentiment: "negative",
+      resolution: "pending",
+    });
+
+    const coachConvId = await getOrCreateCoach({});
+    await saveFounderMessage({
+      coachConversationId: coachConvId,
+      text: `🚩 Flagged AI reply for review:\n\n"${messageText}"\n\nMy feedback: ${feedbackText}`,
+    });
+
+    onSwitchToCoach();
+  };
+
   return (
     <div className="flex flex-col h-full bg-[#e5ddd5]">
-      <ChatHeader
-        customers={customers ?? []}
-        selectedCustomerId={selectedCustomerId}
-        onSelectCustomer={handleSelectCustomer}
-      />
+      <ChatHeader />
       <MessageThread
         messages={messages ?? []}
         streamingMessage={streaming}
-        onFlag={onFlagForCoach}
+        onFeedback={handleFeedback}
       />
-      <ChatInput onSend={handleSend} disabled={!conversationId} />
+      <ChatInput
+        onSend={handleSend}
+        onClear={handleClear}
+        disabled={!conversationId}
+      />
     </div>
   );
 }
