@@ -22,7 +22,7 @@ export default function CoachMessageThread({ messages, streamingMessage }: Props
   }, [messages.length, streamingMessage?.text]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1 bg-[#f5f3ff]">
+    <div className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-1 bg-[#f5f3ff]">
       {messages.length === 0 && !streamingMessage && (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
