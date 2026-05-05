@@ -6,6 +6,7 @@ import CoachMessageBubble from "./CoachMessageBubble";
 
 interface StreamingMessage {
   text: string;
+  toolsCalled: string[];
 }
 
 interface Props {

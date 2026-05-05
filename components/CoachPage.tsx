@@ -15,6 +15,7 @@ interface Props {
 
 interface StreamingMessage {
   text: string;
+  toolsCalled: string[];
 }
 
 export default function CoachPage({ flaggedMessageId, onFlaggedMessageConsumed }: Props) {
@@ -23,7 +24,6 @@ export default function CoachPage({ flaggedMessageId, onFlaggedMessageConsumed }
 
   const getOrCreate = useMutation(api.coachConversations.getOrCreate);
   const saveFounderMessage = useMutation(api.coachMessages.saveFounderMessage);
-  const saveCoachReply = useMutation(api.coachMessages.saveCoachReply);
 
   useEffect(() => {
     getOrCreate({}).then((id) => setConversationId(id));
@@ -47,16 +47,59 @@ export default function CoachPage({ flaggedMessageId, onFlaggedMessageConsumed }
 
     if (flaggedMessageId) onFlaggedMessageConsumed();
 
-    // Stage C2: placeholder reply until /api/coach is wired in Stage C3
-    setStreaming({ text: "" });
-    await new Promise((r) => setTimeout(r, 600));
-    setStreaming({ text: "Coach Claude is being wired up — coming soon! 🎓" });
-    await new Promise((r) => setTimeout(r, 800));
+    setStreaming({ text: "", toolsCalled: [] });
 
-    await saveCoachReply({
-      coachConversationId: conversationId,
-      text: "Coach Claude is being wired up — coming soon! 🎓",
+    const res = await fetch("/api/coach", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        coachConversationId: conversationId,
+        text,
+        flaggedMessageId: flaggedMessageId ?? undefined,
+      }),
     });
+
+    if (!res.body) {
+      setStreaming(null);
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split("\n").filter((l) => l.startsWith("data: "));
+
+      for (const line of lines) {
+        try {
+          const json = JSON.parse(line.slice(6)) as
+            | { type: "delta"; text: string }
+            | { type: "tool"; name: string }
+            | { type: "done" }
+            | { type: "error"; message: string };
+
+          if (json.type === "delta") {
+            setStreaming((prev) =>
+              prev ? { ...prev, text: prev.text + json.text } : null
+            );
+          } else if (json.type === "tool") {
+            setStreaming((prev) =>
+              prev
+                ? { ...prev, toolsCalled: [...prev.toolsCalled, json.name] }
+                : null
+            );
+          } else if (json.type === "done" || json.type === "error") {
+            setStreaming(null);
+          }
+        } catch {
+          // malformed SSE line, skip
+        }
+      }
+    }
 
     setStreaming(null);
   };
