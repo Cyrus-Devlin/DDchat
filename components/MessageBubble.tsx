@@ -2,6 +2,7 @@ import { Doc } from "@/convex/_generated/dataModel";
 
 interface Props {
   message: Doc<"messages">;
+  onFlag?: (messageId: string) => void;
 }
 
 function formatTime(ts: number): string {
@@ -11,7 +12,7 @@ function formatTime(ts: number): string {
   });
 }
 
-export default function MessageBubble({ message }: Props) {
+export default function MessageBubble({ message, onFlag: _onFlag }: Props) {
   const isCustomer = message.sender === "customer";
 
   return (

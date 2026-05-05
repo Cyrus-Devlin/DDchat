@@ -8,7 +8,11 @@ import ChatHeader from "./ChatHeader";
 import MessageThread from "./MessageThread";
 import ChatInput from "./ChatInput";
 
-export default function ChatPage() {
+interface Props {
+  onFlagForCoach: (messageId: string) => void;
+}
+
+export default function ChatPage({ onFlagForCoach }: Props) {
   const [selectedCustomerId, setSelectedCustomerId] = useState<Id<"customers"> | null>(null);
   const [conversationId, setConversationId] = useState<Id<"conversations"> | null>(null);
   const [mode, setMode] = useState<"customer" | "founder">("customer");
@@ -42,7 +46,7 @@ export default function ChatPage() {
         mode={mode}
         onModeChange={setMode}
       />
-      <MessageThread messages={messages ?? []} />
+      <MessageThread messages={messages ?? []} onFlag={onFlagForCoach} />
       <ChatInput onSend={handleSend} disabled={!conversationId} />
     </div>
   );

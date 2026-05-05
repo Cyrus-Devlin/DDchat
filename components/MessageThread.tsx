@@ -6,9 +6,10 @@ import MessageBubble from "./MessageBubble";
 
 interface Props {
   messages: Doc<"messages">[];
+  onFlag?: (messageId: string) => void;
 }
 
-export default function MessageThread({ messages }: Props) {
+export default function MessageThread({ messages, onFlag }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function MessageThread({ messages }: Props) {
         </div>
       )}
       {messages.map((msg) => (
-        <MessageBubble key={msg._id} message={msg} />
+        <MessageBubble key={msg._id} message={msg} onFlag={onFlag} />
       ))}
       <div ref={bottomRef} />
     </div>
