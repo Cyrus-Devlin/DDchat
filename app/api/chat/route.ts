@@ -26,7 +26,13 @@ export async function POST(req: NextRequest) {
   const conversation = await convex.query(api.conversations.get, {
     conversationId: conversationId as Id<"conversations">,
   });
-  const customerId = conversation?.customerId ?? ("prototype" as unknown as Id<"customers">);
+  if (!conversation) {
+    return new Response(
+      JSON.stringify({ error: "Conversation not found" }),
+      { status: 404, headers: { "Content-Type": "application/json" } }
+    );
+  }
+  const customerId = conversation.customerId;
 
   // Save customer message (skip hardcoded AI reply)
   await convex.mutation(api.messages.send, {
