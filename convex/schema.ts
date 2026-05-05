@@ -80,4 +80,73 @@ export default defineSchema({
     role: v.union(v.literal("founder"), v.literal("admin")),
     commandPermissions: v.array(v.string()),
   }),
+
+  knowledge: defineTable({
+    title: v.string(),
+    content: v.string(),
+    sourceType: v.union(
+      v.literal("upload"),
+      v.literal("chat"),
+      v.literal("rule")
+    ),
+    sourceFileName: v.optional(v.string()),
+    supersedes: v.optional(v.id("knowledge")),
+    createdAt: v.number(),
+    retiredAt: v.optional(v.number()),
+  }),
+
+  rules: defineTable({
+    ruleText: v.string(),
+    structured: v.any(),
+    priority: v.number(),
+    createdAt: v.number(),
+    retiredAt: v.optional(v.number()),
+    createdVia: v.union(v.literal("coach_chat"), v.literal("manual")),
+  }),
+
+  promptVersions: defineTable({
+    version: v.number(),
+    persona: v.union(v.literal("customer"), v.literal("coach")),
+    content: v.string(),
+    changeReason: v.string(),
+    proposedBy: v.union(v.literal("coach_claude"), v.literal("founder")),
+    proposedAt: v.number(),
+    approvedAt: v.optional(v.number()),
+    currentlyActive: v.boolean(),
+  })
+    .index("by_persona", ["persona"])
+    .index("by_persona_active", ["persona", "currentlyActive"]),
+
+  feedback: defineTable({
+    messageId: v.optional(v.id("messages")),
+    conversationId: v.optional(v.id("conversations")),
+    text: v.string(),
+    sentiment: v.union(
+      v.literal("positive"),
+      v.literal("negative"),
+      v.literal("neutral")
+    ),
+    resolution: v.union(
+      v.literal("addressed_by_rule"),
+      v.literal("addressed_by_prompt_change"),
+      v.literal("addressed_by_knowledge"),
+      v.literal("noted"),
+      v.literal("pending")
+    ),
+    createdAt: v.number(),
+  }),
+
+  coachConversations: defineTable({
+    createdAt: v.number(),
+  }),
+
+  coachMessages: defineTable({
+    coachConversationId: v.id("coachConversations"),
+    sender: v.union(v.literal("founder"), v.literal("coach")),
+    text: v.string(),
+    attachedFileId: v.optional(v.string()),
+    flaggedMessageId: v.optional(v.id("messages")),
+    claudeReasoning: v.optional(v.any()),
+    createdAt: v.number(),
+  }).index("by_conversation", ["coachConversationId", "createdAt"]),
 });
