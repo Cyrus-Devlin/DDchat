@@ -49,12 +49,17 @@ export default function CoachInput({ onSend, disabled }: Props) {
           headers: { "Content-Type": pendingFile.type || "application/octet-stream" },
           body: pendingFile,
         });
+        if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
         const { storageId } = await res.json() as { storageId: string };
         fileInfo = { fileId: storageId, fileName: pendingFile.name, fileType: pendingFile.type };
-      } finally {
         setPendingFile(null);
+      } catch (err) {
+        console.error("File upload failed:", err);
         setUploading(false);
+        setSending(false);
+        return; // Don't send if upload failed
       }
+      setUploading(false);
     }
 
     setText("");

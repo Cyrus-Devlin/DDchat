@@ -55,29 +55,36 @@ export async function POST(req: NextRequest) {
 
   // Append the current user message (with optional file attachment)
   if (fileId && fileName) {
-    const fileUrl = await convex.query(api.coachFiles.getFileUrl, { storageId: fileId });
-    if (fileUrl) {
-      const isImage = fileType?.startsWith("image/");
-      if (isImage) {
-        const fileRes = await fetch(fileUrl);
-        const buffer = await fileRes.arrayBuffer();
-        const base64 = Buffer.from(buffer).toString("base64");
-        const mediaType = (fileType ?? "image/jpeg") as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-        messageHistory.push({
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
-            { type: "text", text: text || `I've attached ${fileName}. Please analyse it and suggest knowledge entries.` },
-          ],
-        });
+    try {
+      const fileUrl = await convex.query(api.coachFiles.getFileUrl, { storageId: fileId });
+      if (fileUrl) {
+        const isImage = fileType?.startsWith("image/");
+        if (isImage) {
+          const fileRes = await fetch(fileUrl);
+          const buffer = await fileRes.arrayBuffer();
+          const base64 = Buffer.from(buffer).toString("base64");
+          const mediaType = (fileType ?? "image/jpeg") as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+          messageHistory.push({
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
+              { type: "text", text: text || `I've attached ${fileName}. Please analyse it and suggest knowledge entries.` },
+            ],
+          });
+        } else {
+          const fileRes = await fetch(fileUrl);
+          const fileText = await fileRes.text();
+          messageHistory.push({
+            role: "user",
+            content: `[Attached file: ${fileName}]\n\n${fileText}\n\n${text || "Please analyse this document and suggest knowledge entries to add."}`,
+          });
+        }
       } else {
-        const fileRes = await fetch(fileUrl);
-        const fileText = await fileRes.text();
-        messageHistory.push({
-          role: "user",
-          content: `[Attached file: ${fileName}]\n\n${fileText}\n\n${text || "Please analyse this document and suggest knowledge entries to add."}`,
-        });
+        messageHistory.push({ role: "user", content: `[File: ${fileName}]\n\n${text}` });
       }
+    } catch {
+      // File retrieval failed — send text only so Claude still responds
+      messageHistory.push({ role: "user", content: `[File: ${fileName} — could not load]\n\n${text}` });
     }
   } else {
     messageHistory.push({ role: "user", content: text });
