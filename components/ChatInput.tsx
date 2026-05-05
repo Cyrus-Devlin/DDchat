@@ -2,14 +2,15 @@
 
 import { useState, KeyboardEvent, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { Send, Trash2 } from "lucide-react";
 
 interface Props {
   onSend: (text: string) => Promise<void>;
+  onClear: () => void;
   disabled: boolean;
 }
 
-export default function ChatInput({ onSend, disabled }: Props) {
+export default function ChatInput({ onSend, onClear, disabled }: Props) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -39,6 +40,14 @@ export default function ChatInput({ onSend, disabled }: Props) {
 
   return (
     <div className="bg-[#f0f0f0] px-3 py-2 flex items-end gap-2 flex-shrink-0 border-t border-gray-200">
+      <button
+        type="button"
+        onClick={onClear}
+        title="Clear chat"
+        className="flex-shrink-0 h-9 w-9 flex items-center justify-center rounded-full text-gray-400 hover:text-red-400 transition-colors"
+      >
+        <Trash2 className="h-4 w-4" />
+      </button>
       <textarea
         ref={textareaRef}
         value={text}
