@@ -11,6 +11,7 @@ import CoachInput, { FileInfo } from "./CoachInput";
 interface Props {
   flaggedMessageId: string | null;
   onFlaggedMessageConsumed: () => void;
+  isActive: boolean;
 }
 
 interface StreamingMessage {
@@ -18,7 +19,7 @@ interface StreamingMessage {
   toolsCalled: string[];
 }
 
-export default function CoachPage({ flaggedMessageId, onFlaggedMessageConsumed }: Props) {
+export default function CoachPage({ flaggedMessageId, onFlaggedMessageConsumed, isActive }: Props) {
   const [conversationId, setConversationId] = useState<Id<"coachConversations"> | null>(null);
   const [streaming, setStreaming] = useState<StreamingMessage | null>(null);
 
@@ -109,7 +110,7 @@ export default function CoachPage({ flaggedMessageId, onFlaggedMessageConsumed }
   return (
     <div className="flex flex-col h-full bg-[#f5f3ff]">
       <CoachHeader />
-      <CoachMessageThread messages={messages ?? []} streamingMessage={streaming} />
+      <CoachMessageThread messages={messages ?? []} streamingMessage={streaming} isActive={isActive} />
       <CoachInput onSend={handleSend} disabled={!conversationId} />
     </div>
   );

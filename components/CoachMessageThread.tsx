@@ -12,15 +12,20 @@ interface StreamingMessage {
 interface Props {
   messages: Doc<"coachMessages">[];
   streamingMessage: StreamingMessage | null;
+  isActive: boolean;
 }
 
-export default function CoachMessageThread({ messages, streamingMessage }: Props) {
+export default function CoachMessageThread({ messages, streamingMessage, isActive }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [messages.length, streamingMessage?.text]);
+    if (!isActive) return;
+    const raf = requestAnimationFrame(() => {
+      const el = containerRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [isActive, messages.length, streamingMessage?.text]);
 
   return (
     <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-1 bg-[#f5f3ff]">

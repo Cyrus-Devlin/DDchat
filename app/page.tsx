@@ -53,6 +53,7 @@ export default function Home() {
           <CoachPage
             flaggedMessageId={null}
             onFlaggedMessageConsumed={() => {}}
+            isActive={activeTab === "coach"}
           />
         </div>
       </div>
