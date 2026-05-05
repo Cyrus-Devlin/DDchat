@@ -14,7 +14,7 @@ interface StreamingMessage {
 }
 
 interface Props {
-  onSwitchToCoach: () => void;
+  onSwitchToCoach: (message: string) => void;
 }
 
 export default function ChatPage({ onSwitchToCoach }: Props) {
@@ -110,7 +110,8 @@ export default function ChatPage({ onSwitchToCoach }: Props) {
       text: `🚩 Flagged AI reply for review:\n\n"${messageText}"\n\nMy feedback: ${feedbackText}`,
     });
 
-    onSwitchToCoach();
+    const contextMessage = `🚩 Flagged AI reply for review:\n\n"${messageText}"\n\nFounder's feedback: ${feedbackText}`;
+    onSwitchToCoach(contextMessage);
   };
 
   return (

@@ -11,6 +11,7 @@ export default function Home() {
   const [unlocked, setUnlocked] = useState(false);
   const [checking, setChecking] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("customer");
+  const [autoTriggerCoachMessage, setAutoTriggerCoachMessage] = useState<string | null>(null);
   useEffect(() => {
     if (localStorage.getItem("dripdash_unlocked") === "true") {
       setUnlocked(true);
@@ -47,13 +48,15 @@ export default function Home() {
       </nav>
       <div className="flex-1 overflow-hidden">
         <div className={`h-full overflow-hidden ${activeTab === "customer" ? "" : "hidden"}`}>
-          <ChatPage onSwitchToCoach={() => setActiveTab("coach")} />
+          <ChatPage onSwitchToCoach={(msg) => { setAutoTriggerCoachMessage(msg); setActiveTab("coach"); }} />
         </div>
         <div className={`h-full overflow-hidden ${activeTab === "coach" ? "" : "hidden"}`}>
           <CoachPage
             flaggedMessageId={null}
             onFlaggedMessageConsumed={() => {}}
             isActive={activeTab === "coach"}
+            autoTriggerMessage={autoTriggerCoachMessage}
+            onAutoTriggerConsumed={() => setAutoTriggerCoachMessage(null)}
           />
         </div>
       </div>
