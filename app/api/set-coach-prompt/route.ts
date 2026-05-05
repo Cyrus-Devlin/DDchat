@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
+import { requireAuth } from "@/lib/requireAuth";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -79,7 +80,9 @@ Always respond in this structure:
 🎯 Goal
 Ensure: no rule drift, no contradictory instruction sets, clean deterministic behaviour over time, user always approves final state changes.`;
 
-export async function POST() {
+export async function POST(req: NextRequest) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
   const now = Date.now();
 
   // Retire all existing coach prompt versions via the HTTP client
