@@ -15,8 +15,6 @@ interface Props {
 export default function ChatPage({ onFlagForCoach }: Props) {
   const [selectedCustomerId, setSelectedCustomerId] = useState<Id<"customers"> | null>(null);
   const [conversationId, setConversationId] = useState<Id<"conversations"> | null>(null);
-  const [mode, setMode] = useState<"customer" | "founder">("customer");
-
   const customers = useQuery(api.customers.list);
   const messages = useQuery(
     api.messages.list,
@@ -43,8 +41,6 @@ export default function ChatPage({ onFlagForCoach }: Props) {
         customers={customers ?? []}
         selectedCustomerId={selectedCustomerId}
         onSelectCustomer={handleSelectCustomer}
-        mode={mode}
-        onModeChange={setMode}
       />
       <MessageThread messages={messages ?? []} onFlag={onFlagForCoach} />
       <ChatInput onSend={handleSend} disabled={!conversationId} />

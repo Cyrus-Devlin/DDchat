@@ -8,22 +8,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-
 interface Props {
   customers: Doc<"customers">[];
   selectedCustomerId: Id<"customers"> | null;
   onSelectCustomer: (id: Id<"customers">) => void;
-  mode: "customer" | "founder";
-  onModeChange: (mode: "customer" | "founder") => void;
 }
 
 export default function ChatHeader({
   customers,
   selectedCustomerId,
   onSelectCustomer,
-  mode,
-  onModeChange,
 }: Props) {
   return (
     <div className="bg-[#128c7e] px-4 py-3 flex items-center gap-3 shadow-md flex-shrink-0">
@@ -45,19 +39,6 @@ export default function ChatHeader({
           </SelectContent>
         </Select>
       </div>
-
-      <button
-        onClick={() => onModeChange(mode === "customer" ? "founder" : "customer")}
-        className="flex-shrink-0"
-        title="Founder mode — coming in a later stage"
-      >
-        <Badge
-          variant="outline"
-          className="border-white/30 text-white/50 text-xs cursor-not-allowed"
-        >
-          {mode === "customer" ? "Customer" : "Founder"} mode
-        </Badge>
-      </button>
     </div>
   );
 }
