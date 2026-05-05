@@ -20,6 +20,7 @@ import type * as knowledge from "../knowledge.js";
 import type * as messages from "../messages.js";
 import type * as nurses from "../nurses.js";
 import type * as promptVersions from "../promptVersions.js";
+import type * as resetBooking from "../resetBooking.js";
 import type * as rules from "../rules.js";
 import type * as seed from "../seed.js";
 
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   messages: typeof messages;
   nurses: typeof nurses;
   promptVersions: typeof promptVersions;
+  resetBooking: typeof resetBooking;
   rules: typeof rules;
   seed: typeof seed;
 }>;
