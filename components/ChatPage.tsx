@@ -153,7 +153,7 @@ export default function ChatPage({ onSwitchToCoach }: Props) {
   return (
     <div className="flex flex-col h-full bg-[#e5ddd5]">
       <ChatHeader />
-      <div className="flex-1 overflow-hidden relative">
+      <div className="flex-1 overflow-hidden relative flex flex-col">
         <MessageThread
           messages={messages ?? []}
           streamingMessage={streaming}
