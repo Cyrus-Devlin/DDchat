@@ -6,7 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import CoachHeader from "./CoachHeader";
 import CoachMessageThread from "./CoachMessageThread";
-import CoachInput from "./CoachInput";
+import CoachInput, { FileInfo } from "./CoachInput";
 
 interface Props {
   flaggedMessageId: string | null;
@@ -34,15 +34,14 @@ export default function CoachPage({ flaggedMessageId, onFlaggedMessageConsumed }
     conversationId ? { coachConversationId: conversationId } : "skip"
   );
 
-  const handleSend = async (text: string) => {
+  const handleSend = async (text: string, fileInfo?: FileInfo) => {
     if (!conversationId) return;
 
     await saveFounderMessage({
       coachConversationId: conversationId,
       text,
-      ...(flaggedMessageId
-        ? { flaggedMessageId: flaggedMessageId as Id<"messages"> }
-        : {}),
+      ...(flaggedMessageId ? { flaggedMessageId: flaggedMessageId as Id<"messages"> } : {}),
+      ...(fileInfo ? { attachedFileId: fileInfo.fileId } : {}),
     });
 
     if (flaggedMessageId) onFlaggedMessageConsumed();
@@ -56,6 +55,9 @@ export default function CoachPage({ flaggedMessageId, onFlaggedMessageConsumed }
         coachConversationId: conversationId,
         text,
         flaggedMessageId: flaggedMessageId ?? undefined,
+        fileId: fileInfo?.fileId,
+        fileName: fileInfo?.fileName,
+        fileType: fileInfo?.fileType,
       }),
     });
 
