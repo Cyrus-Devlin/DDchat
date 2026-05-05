@@ -36,26 +36,21 @@ export async function POST(req: NextRequest) {
     skipAiReply: true,
   });
 
-  // Build system prompt from DB: base prompt + active rules + active knowledge
-  const [activePromptRow, activeRules, activeKnowledge] = await Promise.all([
+  // Build system prompt from DB: base prompt + active knowledge
+  const [activePromptRow, activeKnowledge] = await Promise.all([
     convex.query(api.promptVersions.getActive, { persona: "customer" }),
-    convex.query(api.rules.listActive, {}),
     convex.query(api.knowledge.listActive, {}),
   ]);
 
   const basePrompt = (activePromptRow as { content?: string } | null)?.content
     ?? SYSTEM_PROMPT_FALLBACK;
 
-  const rules = activeRules as Array<{ ruleText: string }>;
   const knowledge = activeKnowledge as Array<{ title: string; content: string }>;
 
-  const rulesSection = rules.length > 0
-    ? `\n\n## Business Rules\n${rules.map((r, i) => `${i + 1}. ${r.ruleText}`).join("\n")}`
-    : "";
   const knowledgeSection = knowledge.length > 0
     ? `\n\n## Knowledge Base\n${knowledge.map((k) => `### ${k.title}\n${k.content}`).join("\n\n")}`
     : "";
-  const systemPrompt = basePrompt + rulesSection + knowledgeSection;
+  const systemPrompt = basePrompt + knowledgeSection;
 
   // Load conversation history
   const history = await convex.query(api.messages.list, {
