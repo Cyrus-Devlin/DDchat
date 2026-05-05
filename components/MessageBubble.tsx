@@ -45,16 +45,6 @@ export default function MessageBubble({ message, onFeedback }: Props) {
         </p>
       </div>
 
-      {!isCustomer && onFeedback && !showFeedback && (
-        <button
-          onClick={() => setShowFeedback(true)}
-          className="mt-1 px-3 py-1 rounded-full text-[11px] font-medium bg-white border border-gray-200 text-gray-500 hover:border-orange-300 hover:text-orange-500 shadow-sm transition-colors"
-          title="Send feedback to Coach Claude"
-        >
-          🚩 Flag for coach
-        </button>
-      )}
-
       {!isCustomer && showFeedback && (
         <div className="mt-1 ml-1 bg-white border border-gray-200 rounded-xl p-3 shadow-md w-72">
           <p className="text-xs font-medium text-gray-700 mb-1">What was wrong with this reply?</p>
