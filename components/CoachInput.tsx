@@ -2,7 +2,7 @@
 
 import { useState, KeyboardEvent, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { Send, Paperclip } from "lucide-react";
 
 interface Props {
   onSend: (text: string) => Promise<void>;
@@ -39,6 +39,16 @@ export default function CoachInput({ onSend, disabled }: Props) {
 
   return (
     <div className="bg-white px-3 py-2 flex items-end gap-2 flex-shrink-0 border-t border-[#e0e7ff]">
+      <Button
+        type="button"
+        size="icon"
+        variant="ghost"
+        disabled={disabled}
+        title="Attach document (coming soon)"
+        className="rounded-full text-gray-400 hover:text-[#6366f1] flex-shrink-0 h-9 w-9 cursor-not-allowed opacity-60"
+      >
+        <Paperclip className="h-4 w-4" />
+      </Button>
       <textarea
         ref={textareaRef}
         value={text}

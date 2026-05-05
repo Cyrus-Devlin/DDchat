@@ -38,7 +38,7 @@ export default function ChatPage({ onFlagForCoach }: Props) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#e5ddd5]">
+    <div className="flex flex-col h-full bg-[#e5ddd5]">
       <ChatHeader
         customers={customers ?? []}
         selectedCustomerId={selectedCustomerId}
