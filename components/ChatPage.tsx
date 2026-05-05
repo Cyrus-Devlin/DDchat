@@ -116,7 +116,7 @@ export default function ChatPage({ onSwitchToCoach }: Props) {
 
   return (
     <div className="flex flex-col h-full bg-[#e5ddd5]">
-      <ChatHeader />
+      <ChatHeader onFeedback={() => {}} feedbackDisabled={!conversationId} />
       <MessageThread
         messages={messages ?? []}
         streamingMessage={streaming}
