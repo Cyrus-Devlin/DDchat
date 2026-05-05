@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import CoachHeader from "./CoachHeader";
 import CoachMessageThread from "./CoachMessageThread";
 import CoachInput, { FileInfo } from "./CoachInput";
 
@@ -122,7 +121,6 @@ export default function CoachPage({
 
   return (
     <div className="flex flex-col h-full bg-[#f5f3ff]">
-      <CoachHeader />
       <CoachMessageThread messages={messages ?? []} streamingMessage={streaming} isActive={isActive} />
       <CoachInput onSend={handleSend} disabled={!conversationId} />
     </div>

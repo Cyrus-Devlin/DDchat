@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import ChatHeader from "./ChatHeader";
 import MessageThread from "./MessageThread";
 import ChatInput from "./ChatInput";
 import FeedbackPanel from "./FeedbackPanel";
@@ -152,7 +151,6 @@ export default function ChatPage({ onSwitchToCoach }: Props) {
 
   return (
     <div className="flex flex-col h-full bg-[#e5ddd5]">
-      <ChatHeader />
       <div className="flex-1 overflow-hidden relative flex flex-col">
         <MessageThread
           messages={messages ?? []}
