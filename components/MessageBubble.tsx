@@ -48,7 +48,7 @@ export default function MessageBubble({ message, onFeedback }: Props) {
       {!isCustomer && onFeedback && !showFeedback && (
         <button
           onClick={() => setShowFeedback(true)}
-          className="text-[11px] text-gray-400 hover:text-orange-500 mt-0.5 ml-1 transition-colors"
+          className="mt-1 px-3 py-1 rounded-full text-[11px] font-medium bg-white border border-gray-200 text-gray-500 hover:border-orange-300 hover:text-orange-500 shadow-sm transition-colors"
           title="Send feedback to Coach Claude"
         >
           🚩 Flag for coach
