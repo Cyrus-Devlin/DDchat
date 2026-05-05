@@ -19,6 +19,7 @@ export const saveFounderMessage = mutation({
     coachConversationId: v.id("coachConversations"),
     text: v.string(),
     flaggedMessageId: v.optional(v.id("messages")),
+    attachedFileId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("coachMessages", {
@@ -26,6 +27,7 @@ export const saveFounderMessage = mutation({
       sender: "founder",
       text: args.text,
       flaggedMessageId: args.flaggedMessageId,
+      attachedFileId: args.attachedFileId,
       createdAt: Date.now(),
     });
   },
