@@ -67,8 +67,11 @@ export default function ChatInput({ onSend, onClear, onFeedback, feedbackDisable
         placeholder={disabled ? "Starting chat…" : "Type a message"}
         disabled={disabled || sending}
         rows={1}
-        autoComplete="off"
+        autoComplete="one-time-code"
         autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+        data-form-type="other"
         className="flex-1 resize-none rounded-2xl px-4 py-2 text-base bg-white border border-gray-200 outline-none focus:border-gray-300 overflow-y-auto leading-5"
       />
       <Button
