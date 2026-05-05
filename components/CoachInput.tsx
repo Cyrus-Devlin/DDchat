@@ -118,7 +118,7 @@ export default function CoachInput({ onSend, disabled }: Props) {
               ? "Uploading…"
               : pendingFile
               ? "Add a note or just press send…"
-              : "State a rule, attach a document, or ask Coach Claude anything…"
+              : "Message Coach Claude…"
           }
           disabled={disabled || busy}
           rows={1}
