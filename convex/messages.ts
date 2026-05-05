@@ -12,6 +12,13 @@ export const list = query({
   },
 });
 
+export const getById = query({
+  args: { messageId: v.id("messages") },
+  handler: async (ctx, { messageId }) => {
+    return await ctx.db.get(messageId);
+  },
+});
+
 // Stage 1: hardcoded AI reply. Stage 2 replaces this with Claude streaming.
 export const send = mutation({
   args: {
