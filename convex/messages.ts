@@ -25,8 +25,9 @@ export const send = mutation({
     conversationId: v.id("conversations"),
     customerId: v.id("customers"),
     text: v.string(),
+    skipAiReply: v.optional(v.boolean()),
   },
-  handler: async (ctx, { conversationId, customerId, text }) => {
+  handler: async (ctx, { conversationId, customerId, text, skipAiReply }) => {
     const now = Date.now();
 
     await ctx.db.insert("messages", {
@@ -40,12 +41,33 @@ export const send = mutation({
 
     await ctx.db.patch(conversationId, { lastMessageAt: now });
 
+    if (!skipAiReply) {
+      await ctx.db.insert("messages", {
+        conversationId,
+        sender: "ai",
+        text: "Hi! I'm the Dripdash booking assistant. I can help you schedule an IV therapy session. What area are you in, and when are you looking to book?",
+        channel: "prototype",
+        createdAt: now + 1,
+      });
+    }
+  },
+});
+
+export const saveAiReply = mutation({
+  args: {
+    conversationId: v.id("conversations"),
+    text: v.string(),
+    claudeReasoning: v.optional(v.any()),
+  },
+  handler: async (ctx, { conversationId, text, claudeReasoning }) => {
     await ctx.db.insert("messages", {
       conversationId,
       sender: "ai",
-      text: "Hi! I'm the Dripdash booking assistant. I can help you schedule an IV therapy session. What area are you in, and when are you looking to book?",
+      text,
       channel: "prototype",
-      createdAt: now + 1,
+      createdAt: Date.now(),
+      ...(claudeReasoning ? { claudeReasoning } : {}),
     });
+    await ctx.db.patch(conversationId, { lastMessageAt: Date.now() });
   },
 });
