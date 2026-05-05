@@ -105,7 +105,7 @@ export default function CoachPage({ flaggedMessageId, onFlaggedMessageConsumed }
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#f5f3ff]">
+    <div className="flex flex-col h-full min-h-0 bg-[#f5f3ff]">
       <CoachHeader />
       <CoachMessageThread messages={messages ?? []} streamingMessage={streaming} />
       <CoachInput onSend={handleSend} disabled={!conversationId} />

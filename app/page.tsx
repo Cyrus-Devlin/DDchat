@@ -53,10 +53,10 @@ export default function Home() {
         </button>
       </nav>
       <div className="flex-1 overflow-hidden">
-        <div className={`h-full ${activeTab === "customer" ? "" : "hidden"}`}>
+        <div className={`h-full overflow-hidden ${activeTab === "customer" ? "" : "hidden"}`}>
           <ChatPage onFlagForCoach={handleFlagForCoach} />
         </div>
-        <div className={`h-full ${activeTab === "coach" ? "" : "hidden"}`}>
+        <div className={`h-full overflow-hidden ${activeTab === "coach" ? "" : "hidden"}`}>
           <CoachPage
             flaggedMessageId={flaggedMessageId}
             onFlaggedMessageConsumed={() => setFlaggedMessageId(null)}
