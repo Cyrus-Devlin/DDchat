@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, KeyboardEvent, useRef, useEffect } from "react";
+import { useRef, KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Send, Trash2, MessageSquarePlus } from "lucide-react";
 
@@ -13,27 +13,27 @@ interface Props {
 }
 
 export default function ChatInput({ onSend, onClear, onFeedback, feedbackDisabled, disabled }: Props) {
-  const [text, setText] = useState("");
-  const [sending, setSending] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const divRef = useRef<HTMLDivElement>(null);
+  const sendingRef = useRef(false);
 
-  useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 96)}px`;
-  }, [text]);
+  const getText = () => divRef.current?.innerText.trim() ?? "";
 
-  const handleSend = async () => {
-    const trimmed = text.trim();
-    if (!trimmed || disabled || sending) return;
-    setSending(true);
-    setText("");
-    await onSend(trimmed);
-    setSending(false);
+  const clearInput = () => {
+    if (divRef.current) {
+      divRef.current.innerText = "";
+    }
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleSend = async () => {
+    const text = getText();
+    if (!text || disabled || sendingRef.current) return;
+    sendingRef.current = true;
+    clearInput();
+    await onSend(text);
+    sendingRef.current = false;
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -59,24 +59,24 @@ export default function ChatInput({ onSend, onClear, onFeedback, feedbackDisable
       >
         <MessageSquarePlus className="h-4 w-4" />
       </button>
-      <textarea
-        ref={textareaRef}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
+      <div
+        ref={divRef}
+        contentEditable={!disabled}
         onKeyDown={handleKeyDown}
-        placeholder={disabled ? "Starting chat…" : "Type a message"}
-        disabled={disabled || sending}
-        rows={1}
-        autoComplete="one-time-code"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck={false}
-        data-form-type="other"
-        className="flex-1 resize-none rounded-2xl px-4 py-2 text-base bg-white border border-gray-200 outline-none focus:border-gray-300 overflow-y-auto leading-5"
+        onInput={() => {
+          // cap height at ~96px
+          const el = divRef.current;
+          if (!el) return;
+          el.style.height = "auto";
+          el.style.height = `${Math.min(el.scrollHeight, 96)}px`;
+        }}
+        data-placeholder={disabled ? "Starting chat…" : "Type a message"}
+        className="flex-1 min-h-[38px] max-h-24 overflow-y-auto rounded-2xl px-4 py-2 text-base bg-white border border-gray-200 outline-none focus:border-gray-300 leading-5 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+        style={{ wordBreak: "break-word" }}
       />
       <Button
         onClick={handleSend}
-        disabled={disabled || !text.trim() || sending}
+        disabled={disabled}
         size="icon"
         className="rounded-full bg-[#00a884] hover:bg-[#008f71] text-white flex-shrink-0 h-9 w-9"
       >
