@@ -2,15 +2,17 @@
 
 import { useState, KeyboardEvent, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Send, Trash2 } from "lucide-react";
+import { Send, Trash2, MessageSquarePlus } from "lucide-react";
 
 interface Props {
   onSend: (text: string) => Promise<void>;
   onClear: () => void;
+  onFeedback: () => void;
+  feedbackDisabled: boolean;
   disabled: boolean;
 }
 
-export default function ChatInput({ onSend, onClear, disabled }: Props) {
+export default function ChatInput({ onSend, onClear, onFeedback, feedbackDisabled, disabled }: Props) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -48,6 +50,15 @@ export default function ChatInput({ onSend, onClear, disabled }: Props) {
       >
         <Trash2 className="h-4 w-4" />
       </button>
+      <button
+        type="button"
+        onClick={onFeedback}
+        disabled={feedbackDisabled}
+        title="Give feedback"
+        className="flex-shrink-0 h-9 w-9 flex items-center justify-center rounded-full text-gray-400 hover:text-[#128c7e] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      >
+        <MessageSquarePlus className="h-4 w-4" />
+      </button>
       <textarea
         ref={textareaRef}
         value={text}
@@ -56,7 +67,9 @@ export default function ChatInput({ onSend, onClear, disabled }: Props) {
         placeholder={disabled ? "Starting chat…" : "Type a message"}
         disabled={disabled || sending}
         rows={1}
-        className="flex-1 resize-none rounded-2xl px-4 py-2 text-sm bg-white border border-gray-200 outline-none focus:border-gray-300 overflow-y-auto leading-5"
+        autoComplete="off"
+        autoCorrect="off"
+        className="flex-1 resize-none rounded-2xl px-4 py-2 text-base bg-white border border-gray-200 outline-none focus:border-gray-300 overflow-y-auto leading-5"
       />
       <Button
         onClick={handleSend}

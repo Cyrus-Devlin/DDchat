@@ -176,17 +176,10 @@ export default function ChatPage({ onSwitchToCoach }: Props) {
       <ChatInput
         onSend={handleSend}
         onClear={handleClear}
+        onFeedback={() => setFeedbackOpen(true)}
+        feedbackDisabled={!conversationId || !hasMessages}
         disabled={!conversationId}
       />
-      <div className="bg-[#f0f0f0] px-4 pb-3 pt-1 flex-shrink-0">
-        <button
-          onClick={() => setFeedbackOpen(true)}
-          disabled={!conversationId || !hasMessages}
-          className="w-full py-2.5 rounded-full text-sm font-medium bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-sm"
-        >
-          Give feedback / Clear
-        </button>
-      </div>
     </div>
   );
 }
