@@ -15,14 +15,15 @@ interface Props {
 }
 
 export default function CoachMessageThread({ messages, streamingMessage }: Props) {
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = containerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length, streamingMessage?.text]);
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-1 bg-[#f5f3ff]">
+    <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-1 bg-[#f5f3ff]">
       {messages.length === 0 && !streamingMessage && (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
@@ -55,7 +56,7 @@ export default function CoachMessageThread({ messages, streamingMessage }: Props
           </div>
         </div>
       )}
-      <div ref={bottomRef} />
+      <div />
     </div>
   );
 }

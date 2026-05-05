@@ -16,14 +16,15 @@ interface Props {
 }
 
 export default function MessageThread({ messages, streamingMessage, onFlag }: Props) {
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = containerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length, streamingMessage?.text]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+    <div ref={containerRef} className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
       {messages.length === 0 && (
         <div className="flex items-center justify-center h-full">
           <p className="text-gray-500 text-sm">
@@ -54,7 +55,7 @@ export default function MessageThread({ messages, streamingMessage, onFlag }: Pr
           </div>
         </div>
       )}
-      <div ref={bottomRef} />
+      <div />
     </div>
   );
 }
