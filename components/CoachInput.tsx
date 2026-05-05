@@ -18,7 +18,7 @@ export default function CoachInput({ onSend, disabled }: Props) {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+    el.style.height = `${Math.max(Math.min(el.scrollHeight, 96), 38)}px`;
   }, [text]);
 
   const handleSend = async () => {
