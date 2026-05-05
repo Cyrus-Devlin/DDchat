@@ -38,7 +38,7 @@ export default function CoachInput({ onSend, disabled }: Props) {
   };
 
   return (
-    <div className="bg-white px-3 py-2 flex items-end gap-2 flex-shrink-0 border-t border-[#e0e7ff]">
+    <div className="bg-[#f0f0f0] px-3 py-2 flex items-end gap-2 flex-shrink-0 border-t border-gray-200">
       <Button
         type="button"
         size="icon"
