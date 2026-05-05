@@ -11,10 +11,17 @@ export async function GET() {
     convex.query(api.promptVersions.getActive, { persona: "customer" }),
   ]);
 
+  const basePrompt = (prompt as { content?: string } | null)?.content ?? "(no active prompt)";
+  const rulesSection = (rules as Array<{ ruleText: string }>).length > 0
+    ? `\n\n## Business Rules\n${(rules as Array<{ ruleText: string }>).map((r, i) => `${i + 1}. ${r.ruleText}`).join("\n")}`
+    : "";
+  const fullSystemPrompt = basePrompt + rulesSection;
+
   return NextResponse.json({
+    promptVersion: (prompt as { version?: number } | null)?.version ?? null,
+    ruleCount: (rules as Array<{ ruleText: string }>).length,
     rules: (rules as Array<{ ruleText: string }>).map((r) => r.ruleText),
     knowledgeEntries: (knowledge as Array<{ title: string }>).map((k) => k.title),
-    promptVersion: (prompt as { version?: number } | null)?.version ?? null,
-    promptPreview: ((prompt as { content?: string } | null)?.content ?? "").slice(0, 100),
+    fullSystemPrompt,
   });
 }
