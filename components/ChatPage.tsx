@@ -51,11 +51,6 @@ export default function ChatPage({ onSwitchToCoach }: Props) {
     toastTimer.current = setTimeout(() => setToast(null), 3000);
   };
 
-  const handleClear = async () => {
-    if (!conversationId) return;
-    await clearConversation({ conversationId });
-  };
-
   const handleSend = async (text: string) => {
     if (!conversationId) return;
 
@@ -152,10 +147,7 @@ export default function ChatPage({ onSwitchToCoach }: Props) {
 
   return (
     <div className="flex flex-col h-full bg-[#e5ddd5]">
-      <ChatHeader
-        onFeedback={() => setFeedbackOpen(true)}
-        feedbackDisabled={!conversationId || !hasMessages}
-      />
+      <ChatHeader />
       <div className="flex-1 overflow-hidden relative">
         <MessageThread
           messages={messages ?? []}
@@ -178,9 +170,17 @@ export default function ChatPage({ onSwitchToCoach }: Props) {
       </div>
       <ChatInput
         onSend={handleSend}
-        onClear={handleClear}
         disabled={!conversationId}
       />
+      <div className="bg-[#f0f0f0] px-3 pb-2 flex justify-center border-t-0">
+        <button
+          onClick={() => setFeedbackOpen(true)}
+          disabled={!conversationId || !hasMessages}
+          className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors py-1"
+        >
+          Give feedback / Clear
+        </button>
+      </div>
     </div>
   );
 }
