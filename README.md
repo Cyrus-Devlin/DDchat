@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dripdash AI Chat Prototype
 
-## Getting Started
+WhatsApp-style AI booking assistant prototype for Dripdash IV clinic.
 
-First, run the development server:
+## Running locally
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Prerequisites
+- Node.js 18+
+- Convex account (free at convex.dev)
+- Anthropic API key (added in Stage 2)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install dependencies:
+   ```
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Initialize Convex (run once):
+   ```
+   npx convex dev
+   ```
+   Log in and create a project. This writes `NEXT_PUBLIC_CONVEX_URL` to `.env.local`.
 
-## Learn More
+3. Copy `.env.local.example` to `.env.local` and fill in all values.
 
-To learn more about Next.js, take a look at the following resources:
+4. Start the dev server:
+   ```
+   npm run dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Seed the database (first run only):
+   ```
+   curl http://localhost:3000/api/seed
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Visit http://localhost:3000.
 
-## Deploy on Vercel
+## Deploying to Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Push to GitHub.
+2. Import the repo in Vercel.
+3. Add environment variables: `NEXT_PUBLIC_CONVEX_URL`, `ANTHROPIC_API_KEY`, `PROTOTYPE_PASSWORD`.
+4. Deploy.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For Convex in production, run `npx convex deploy` to push schema and functions to the production deployment.
+
+## Architecture
+
+| Path | Purpose |
+|------|---------|
+| `convex/schema.ts` | All table definitions — ported to real platform later |
+| `convex/seed.ts` | Sample nurses + customers |
+| `convex/messages.ts` | Message storage and retrieval |
+| `convex/claudeTools.ts` | Claude tool implementations (Stage 2+) |
+| `convex/nurseSimulator.ts` | Simulated nurse reply scheduler (Stage 4+) |
+| `app/api/chat/route.ts` | Streaming Claude endpoint (Stage 2+) |
+| `components/ChatPage.tsx` | Main UI orchestrator |
+| `components/NurseActivityPanel.tsx` | Activity feed (Stage 4+) |
+| `components/InspectorPanel.tsx` | Claude reasoning panel (Stage 5+) |
