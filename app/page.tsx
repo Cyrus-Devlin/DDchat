@@ -29,7 +29,7 @@ export default function Home() {
   if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />;
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-dvh">
       <nav className="flex border-b border-gray-200 bg-white flex-shrink-0 shadow-sm">
         <button
           onClick={() => setActiveTab("customer")}
