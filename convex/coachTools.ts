@@ -4,14 +4,14 @@ import { api } from "./_generated/api";
 
 export const searchKnowledge = action({
   args: { query: v.string() },
-  handler: async (ctx, { query }) => {
+  handler: async (ctx, { query }): Promise<unknown> => {
     return await ctx.runQuery(api.knowledge.search, { query });
   },
 });
 
 export const searchRules = action({
   args: { query: v.string() },
-  handler: async (ctx, { query }) => {
+  handler: async (ctx, { query }): Promise<unknown> => {
     return await ctx.runQuery(api.rules.search, { query });
   },
 });
@@ -28,7 +28,7 @@ export const addKnowledgeEntry = action({
     sourceFileName: v.optional(v.string()),
     supersedesId: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<unknown> => {
     return await ctx.runMutation(api.knowledge.add, {
       title: args.title,
       content: args.content,
@@ -45,7 +45,7 @@ export const addRule = action({
     structured: v.any(),
     priority: v.optional(v.number()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<unknown> => {
     return await ctx.runMutation(api.rules.add, {
       ruleText: args.ruleText,
       structured: args.structured,
@@ -57,20 +57,16 @@ export const addRule = action({
 
 export const retireKnowledge = action({
   args: { id: v.string() },
-  handler: async (ctx, { id }) => {
-    await ctx.runMutation(api.knowledge.retire, {
-      id: id as any,
-    });
+  handler: async (ctx, { id }): Promise<{ retired: boolean }> => {
+    await ctx.runMutation(api.knowledge.retire, { id: id as any });
     return { retired: true };
   },
 });
 
 export const retireRule = action({
   args: { id: v.string() },
-  handler: async (ctx, { id }) => {
-    await ctx.runMutation(api.rules.retire, {
-      id: id as any,
-    });
+  handler: async (ctx, { id }): Promise<{ retired: boolean }> => {
+    await ctx.runMutation(api.rules.retire, { id: id as any });
     return { retired: true };
   },
 });
@@ -81,20 +77,20 @@ export const proposePromptUpdate = action({
     newContent: v.string(),
     reason: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{ versionId: string; status: string }> => {
     const id = await ctx.runMutation(api.promptVersions.propose, {
       persona: args.persona,
       content: args.newContent,
       changeReason: args.reason,
       proposedBy: "coach_claude",
     });
-    return { versionId: id, status: "proposed" };
+    return { versionId: id as unknown as string, status: "proposed" };
   },
 });
 
 export const activatePromptVersion = action({
   args: { versionId: v.string() },
-  handler: async (ctx, { versionId }) => {
+  handler: async (ctx, { versionId }): Promise<{ activated: boolean }> => {
     await ctx.runMutation(api.promptVersions.activate, {
       versionId: versionId as any,
     });
@@ -104,7 +100,7 @@ export const activatePromptVersion = action({
 
 export const rollbackPrompt = action({
   args: { persona: v.union(v.literal("customer"), v.literal("coach")) },
-  handler: async (ctx, { persona }) => {
+  handler: async (ctx, { persona }): Promise<{ rolledBack: boolean }> => {
     await ctx.runMutation(api.promptVersions.rollback, { persona });
     return { rolledBack: true };
   },
@@ -112,7 +108,7 @@ export const rollbackPrompt = action({
 
 export const getRecentCustomerConversation = action({
   args: { messageId: v.string() },
-  handler: async (ctx, { messageId }) => {
+  handler: async (ctx, { messageId }): Promise<unknown> => {
     const message = await ctx.runQuery(api.messages.getById, {
       messageId: messageId as any,
     });
@@ -122,7 +118,7 @@ export const getRecentCustomerConversation = action({
       conversationId: message.conversationId,
     });
 
-    const idx = surrounding.findIndex((m) => m._id === messageId);
+    const idx = surrounding.findIndex((m: { _id: string }) => m._id === messageId);
     const context = surrounding.slice(Math.max(0, idx - 3), idx + 2);
 
     return { flaggedMessage: message, context };
@@ -131,20 +127,27 @@ export const getRecentCustomerConversation = action({
 
 export const simulateCustomerReply = action({
   args: { scenario: v.string() },
-  handler: async (ctx, { scenario }) => {
+  handler: async (ctx, { scenario }): Promise<unknown> => {
     const [activePromptRow, activeRules, activeKnowledge] = await Promise.all([
       ctx.runQuery(api.promptVersions.getActive, { persona: "customer" }),
       ctx.runQuery(api.rules.listActive, {}),
       ctx.runQuery(api.knowledge.listActive, {}),
     ]);
 
-    const basePrompt = activePromptRow?.content ?? "You are Dripdash's booking assistant.";
-    const rulesSection = activeRules.length > 0
-      ? `\n\n## Business Rules\n${activeRules.map((r, i) => `${i + 1}. ${r.ruleText}`).join("\n")}`
-      : "";
-    const knowledgeSection = activeKnowledge.length > 0
-      ? `\n\n## Knowledge Base\n${activeKnowledge.map((k) => `### ${k.title}\n${k.content}`).join("\n\n")}`
-      : "";
+    const basePrompt: string =
+      (activePromptRow as { content?: string } | null)?.content ??
+      "You are Dripdash's booking assistant.";
+    const rules = activeRules as Array<{ ruleText: string }>;
+    const knowledge = activeKnowledge as Array<{ title: string; content: string }>;
+
+    const rulesSection =
+      rules.length > 0
+        ? `\n\n## Business Rules\n${rules.map((r, i) => `${i + 1}. ${r.ruleText}`).join("\n")}`
+        : "";
+    const knowledgeSection =
+      knowledge.length > 0
+        ? `\n\n## Knowledge Base\n${knowledge.map((k) => `### ${k.title}\n${k.content}`).join("\n\n")}`
+        : "";
     const systemPrompt = basePrompt + rulesSection + knowledgeSection;
 
     const Anthropic = (await import("@anthropic-ai/sdk")).default;
@@ -157,8 +160,10 @@ export const simulateCustomerReply = action({
       messages: [{ role: "user", content: scenario }],
     });
 
-    const reply = res.content.find((b) => b.type === "text")?.text ?? "";
-    return { scenario, reply, promptVersion: activePromptRow?.version ?? 0 };
+    const textBlock = res.content.find((b) => b.type === "text");
+    const reply: string = textBlock && "text" in textBlock ? (textBlock.text as string) : "";
+    const version = (activePromptRow as { version?: number } | null)?.version ?? 0;
+    return { scenario, reply, promptVersion: version };
   },
 });
 
@@ -179,7 +184,7 @@ export const recordFeedback = action({
       v.literal("pending")
     ),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<unknown> => {
     return await ctx.runMutation(api.feedback.record, {
       messageId: args.messageId as any,
       text: args.text,
