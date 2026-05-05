@@ -4,12 +4,11 @@ import { v } from "convex/values";
 export const getActive = query({
   args: { persona: v.union(v.literal("customer"), v.literal("coach")) },
   handler: async (ctx, { persona }) => {
-    return await ctx.db
+    const all = await ctx.db
       .query("promptVersions")
-      .withIndex("by_persona_active", (q) =>
-        q.eq("persona", persona).eq("currentlyActive", true)
-      )
-      .first();
+      .withIndex("by_persona", (q) => q.eq("persona", persona))
+      .collect();
+    return all.find((p) => p.currentlyActive) ?? null;
   },
 });
 
@@ -56,14 +55,12 @@ export const activate = mutation({
     const version = await ctx.db.get(versionId);
     if (!version) throw new Error("Version not found");
 
-    const current = await ctx.db
+    const all = await ctx.db
       .query("promptVersions")
-      .withIndex("by_persona_active", (q) =>
-        q.eq("persona", version.persona).eq("currentlyActive", true)
-      )
-      .first();
-    if (current) {
-      await ctx.db.patch(current._id, { currentlyActive: false });
+      .withIndex("by_persona", (q) => q.eq("persona", version.persona))
+      .collect();
+    for (const p of all.filter((p) => p.currentlyActive && p._id !== versionId)) {
+      await ctx.db.patch(p._id, { currentlyActive: false });
     }
 
     await ctx.db.patch(versionId, {
