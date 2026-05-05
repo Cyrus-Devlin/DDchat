@@ -8,6 +8,11 @@ import ChatHeader from "./ChatHeader";
 import MessageThread from "./MessageThread";
 import ChatInput from "./ChatInput";
 
+interface StreamingMessage {
+  text: string;
+  toolsCalled: string[];
+}
+
 interface Props {
   onFlagForCoach: (messageId: string) => void;
 }
@@ -15,6 +20,7 @@ interface Props {
 export default function ChatPage({ onFlagForCoach }: Props) {
   const [selectedCustomerId, setSelectedCustomerId] = useState<Id<"customers"> | null>(null);
   const [conversationId, setConversationId] = useState<Id<"conversations"> | null>(null);
+  const [streaming, setStreaming] = useState<StreamingMessage | null>(null);
   const customers = useQuery(api.customers.list);
   const messages = useQuery(
     api.messages.list,
@@ -22,7 +28,6 @@ export default function ChatPage({ onFlagForCoach }: Props) {
   );
 
   const getOrCreate = useMutation(api.conversations.getOrCreate);
-  const sendMessage = useMutation(api.messages.send);
 
   const handleSelectCustomer = async (customerId: Id<"customers">) => {
     setSelectedCustomerId(customerId);
@@ -32,7 +37,60 @@ export default function ChatPage({ onFlagForCoach }: Props) {
 
   const handleSend = async (text: string) => {
     if (!conversationId || !selectedCustomerId) return;
-    await sendMessage({ conversationId, customerId: selectedCustomerId, text });
+
+    setStreaming({ text: "", toolsCalled: [] });
+
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        conversationId,
+        customerId: selectedCustomerId,
+        text,
+      }),
+    });
+
+    if (!res.body) {
+      setStreaming(null);
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split("\n").filter((l) => l.startsWith("data: "));
+
+      for (const line of lines) {
+        try {
+          const json = JSON.parse(line.slice(6)) as
+            | { type: "delta"; text: string }
+            | { type: "tool"; name: string }
+            | { type: "done" }
+            | { type: "error"; message: string };
+
+          if (json.type === "delta") {
+            setStreaming((prev) =>
+              prev ? { ...prev, text: prev.text + json.text } : null
+            );
+          } else if (json.type === "tool") {
+            setStreaming((prev) =>
+              prev ? { ...prev, toolsCalled: [...prev.toolsCalled, json.name] } : null
+            );
+          } else if (json.type === "done" || json.type === "error") {
+            setStreaming(null);
+          }
+        } catch {
+          // malformed SSE line, skip
+        }
+      }
+    }
+
+    setStreaming(null);
   };
 
   return (
@@ -42,7 +100,11 @@ export default function ChatPage({ onFlagForCoach }: Props) {
         selectedCustomerId={selectedCustomerId}
         onSelectCustomer={handleSelectCustomer}
       />
-      <MessageThread messages={messages ?? []} onFlag={onFlagForCoach} />
+      <MessageThread
+        messages={messages ?? []}
+        streamingMessage={streaming}
+        onFlag={onFlagForCoach}
+      />
       <ChatInput onSend={handleSend} disabled={!conversationId} />
     </div>
   );
