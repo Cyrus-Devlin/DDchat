@@ -57,7 +57,7 @@ export default function CoachInput({ onSend, disabled }: Props) {
         placeholder="State a rule, critique a reply, or ask Coach Claude anything…"
         disabled={disabled || sending}
         rows={1}
-        className="flex-1 resize-none rounded-2xl px-4 py-2 text-sm bg-[#f5f3ff] border border-[#e0e7ff] outline-none focus:border-[#6366f1] overflow-y-auto leading-5"
+        className="flex-1 resize-none rounded-2xl px-4 py-2 text-sm bg-white border border-[#e0e7ff] outline-none focus:border-[#6366f1] overflow-y-auto leading-5"
       />
       <Button
         onClick={handleSend}
